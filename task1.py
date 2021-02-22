@@ -13,10 +13,10 @@ class Rdd:
 
     def returnRddClass(self):
         _, sc = self.init_spark()
-        self.badges = sc.textFile('badges.csv')
+        self.badges = sc.textFile('badges.csv').map(lambda element: element.split('\t'))
         self.comments = sc.textFile('comments.csv')
         self.posts = sc.textFile('posts.csv')
-        self.users = sc.textFile('users.csv')
+        self.users = sc.textFile('users.csv').map(lambda element: element.split('\t'))
 
 
     def getBadges(self):
@@ -28,8 +28,18 @@ class Rdd:
     def getusers(self):
         return self.users
 
+
+def findNumberOfRows(rdd):
+    print("badges has ", rdd.getBadges().count(), " rows")
+    print("Comments has ", rdd.getComments().count(), " rows")
+    print("Posts has ", rdd.getPosts().count(), " rows")
+    print("Users has ", rdd.getusers().count(), " rows")
+
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
 
-    print(rdd.getusers().take(2))
+
+    #print(rdd.getComments().take(2))
+
+    findNumberOfRows(rdd)
