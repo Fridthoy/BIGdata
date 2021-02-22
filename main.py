@@ -12,6 +12,7 @@ def returnBadges():
         quote='"',
         schema="UserId INT, Name STRING, Date DATE, Class INT "
     )
+    print("yolo")
     return df
 
 
