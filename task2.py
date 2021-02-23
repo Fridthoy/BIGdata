@@ -1,22 +1,27 @@
 from task1 import Rdd
 
+
+import base64
+
+def decode(rdd):
+    decoded = rdd.map(lambda x: x.encode('ascii')).map(lambda x: base64.b64decode(x)).map(lambda x: x.decode('ascii'))
+
+    return decoded
+
 def findCommmentlength(commentrdd):
 
-    print(commentrdd.take(5))
+    header = commentrdd.first()
 
-    lineLength = commentrdd.map(lambda s: len(s))
+    lineLength = commentrdd.filter(lambda x: x != header).map(lambda x: x[2])
+    lineLength = decode(lineLength)
+    lineLength = lineLength.map(lambda x: len(x)).sum()
 
-
-    print(lineLength.take(5))
-
-
-
-
+    return lineLength/commentrdd.count()
 
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
 
-    findCommmentlength(rdd.getComments())
+    print(findCommmentlength(rdd.getComments()))
 
     #print(rdd.getComments().take(2))
