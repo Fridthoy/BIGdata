@@ -1,6 +1,9 @@
 import findspark, os, shutil, csv
 findspark.init()
 
+
+
+
 from pyspark.sql import SparkSession
 
 class Rdd:
@@ -13,10 +16,10 @@ class Rdd:
 
     def returnRddClass(self):
         _, sc = self.init_spark()
-        self.badges = sc.textFile('badges.csv').map(lambda element: element.split('\t'))
-        self.comments = sc.textFile('comments.csv')
-        self.posts = sc.textFile('posts.csv')
-        self.users = sc.textFile('users.csv').map(lambda element: element.split('\t'))
+        self.badges = sc.textFile('badges.csv').map(lambda element: element.split('\t')).cache()
+        self.comments = sc.textFile('comments.csv').map(lambda element: element.split('\t')).cache()
+        self.posts = sc.textFile('posts.csv').map(lambda element: element.split('\t')).cache()
+        self.users = sc.textFile('users.csv').map(lambda element: element.split('\t')).cache()
 
 
     def getBadges(self):
@@ -30,16 +33,19 @@ class Rdd:
 
 
 def findNumberOfRows(rdd):
+
     print("badges has ", rdd.getBadges().count(), " rows")
     print("Comments has ", rdd.getComments().count(), " rows")
     print("Posts has ", rdd.getPosts().count(), " rows")
     print("Users has ", rdd.getusers().count(), " rows")
 
+
+
+
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
 
-
-    #print(rdd.getComments().take(2))
+    print(rdd.getBadges().take(2))
 
     findNumberOfRows(rdd)
