@@ -1,7 +1,10 @@
+from pyspark import SparkConf
 from pyspark.sql import SparkSession
+import findspark
+findspark.init()
 
-
-spark = SparkSession.builder.appName("badgesLoad").getOrCreate()
+spark = SparkSession.builder.master(
+    "local").appName("badgesLoad").getOrCreate()
 
 
 def returnBadges():
@@ -12,8 +15,7 @@ def returnBadges():
         quote='"',
         schema="UserId INT, Name STRING, Date DATE, Class INT "
     )
-    print("yolo")
-    return df
+    return df.rdd
 
 
 def returnComments():
@@ -24,7 +26,7 @@ def returnComments():
         quote='"',
         schema="PostId INT, Score INT, Text STRING, CreationDate DATE, UserId INT",
     )
-    return df
+    return df.rdd
 
 
 def returnPosts():
@@ -36,7 +38,7 @@ def returnPosts():
         inferSchema=True
         #schema="PostId INT, Score INT, Text STRING, CreationDate DATE, UserId INT",
     )
-    return df
+    return df.rdd
 
 
 def returnUsers():
@@ -48,8 +50,8 @@ def returnUsers():
         inferSchema=True
         #schema="PostId INT, Score INT, Text STRING, CreationDate DATE, UserId INT",
     )
-    return df
+    return df.rdd
 
 
 if __name__ == '__main__':
-    returnUsers().show(20)
+    returnUsers().collect()
