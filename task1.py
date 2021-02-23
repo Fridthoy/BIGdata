@@ -1,8 +1,8 @@
 from pyspark.sql import SparkSession
+import findspark
 import os
 import shutil
 import csv
-import findspark
 findspark.init()
 
 
@@ -17,11 +17,13 @@ class Rdd:
     def returnRddClass(self):
         _, sc = self.init_spark()
         self.badges = sc.textFile('data/badges.csv').map(
-            lambda element: element.split('\t'))
-        self.comments = sc.textFile('data/comments.csv')
-        self.posts = sc.textFile('data/posts.csv')
+            lambda element: element.split('\t')).cache()
+        self.comments = sc.textFile('data/comments.csv').map(
+            lambda element: element.split('\t')).cache()
+        self.posts = sc.textFile('data/posts.csv').map(
+            lambda element: element.split('\t')).cache()
         self.users = sc.textFile('data/users.csv').map(
-            lambda element: element.split('\t'))
+            lambda element: element.split('\t')).cache()
 
     def getBadges(self):
         return self.badges
@@ -37,6 +39,7 @@ class Rdd:
 
 
 def findNumberOfRows(rdd):
+
     print("badges has ", rdd.getBadges().count(), " rows")
     print("Comments has ", rdd.getComments().count(), " rows")
     print("Posts has ", rdd.getPosts().count(), " rows")
@@ -47,6 +50,6 @@ if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
 
-    # print(rdd.getComments().take(2))
+    print(rdd.getBadges().take(2))
 
     findNumberOfRows(rdd)
