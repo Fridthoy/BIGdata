@@ -1,8 +1,5 @@
-import findspark, os, shutil, csv
+import findspark
 findspark.init()
-
-
-
 
 from pyspark.sql import SparkSession
 
@@ -11,6 +8,7 @@ class Rdd:
     def init_spark(self, app_name="FirstApp", execution_mode="local[*]"):
       spark = SparkSession.builder.master(execution_mode).appName(app_name).getOrCreate()
       sc = spark.sparkContext
+      sc.setLogLevel("ERROR")
       return spark, sc
 
 
@@ -45,7 +43,5 @@ def findNumberOfRows(rdd):
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
-
-    print(rdd.getBadges().take(2))
 
     findNumberOfRows(rdd)
