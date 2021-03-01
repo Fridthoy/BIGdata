@@ -36,7 +36,7 @@ def graph_of_posts_comments(postsrdd, commentsrdd, usersrdd):
 def graphToDataframe(joined_RDD):
     #df = joined_RDD.toDF()
     # df.show()
-    return df
+    return
 
 
 def usersWithMostComments(DataFrame):
