@@ -44,8 +44,13 @@ def findNumberOfRows(rdd):
     print("Users has ", rdd.getusers().count(), " rows")
 
 
-if __name__ == '__main__':
+def main_task1():
     rdd = Rdd()
     rdd.returnRddClass()
 
     findNumberOfRows(rdd)
+    return
+
+
+if __name__ == '__main__':
+    main_task1()

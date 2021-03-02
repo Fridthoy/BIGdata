@@ -107,7 +107,7 @@ def task26(commentRdd):
     print(entropy)
 
 
-if __name__ == '__main__':
+def main_task2():
     rdd = Rdd()
     rdd.returnRddClass()
 
@@ -121,3 +121,9 @@ if __name__ == '__main__':
     df = rdd.getusers().toDF()
     df.printSchema()
     df.show(truncate=False)
+
+    return
+
+
+if __name__ == '__main__':
+    main_task2()

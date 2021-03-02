@@ -61,16 +61,25 @@ def graphToDataframe(joined_RDD):
 
 def findMostComments(df):
     df.show()
-    newdf = df.drop('_2')
+    newdf = df
     newdf = newdf.withColumnRenamed('_1', 'ID of comment owner')
     newdf = newdf.withColumnRenamed('_3', 'Number of comments')
     newdf = newdf.groupBy('ID of comment owner').sum('Number of comments')
     newdf = newdf.orderBy("sum(Number of comments)", ascending=False)
     newdf.show(10)
-    return newdf
+
+    top10users = df
+    top10users = top10users.withColumnRenamed('_1', 'ID of comment owner')
+    top10users = top10users.withColumnRenamed('_2', 'ID of post owner')
+    top10users = top10users.withColumnRenamed('_3', 'Number of comments')
+    top10users = top10users.groupBy(
+        'ID of post owner').sum('Number of comments')
+
+    top10users.show()
+    return newdf, top10users
 
 
-def generateNames(userRdd, commentDf):
+def generateNames(userRdd, commentDf, df):
 
     # -------- Initializing the userRDD and converting to DF -----------
     header = userRdd.first()
@@ -79,9 +88,9 @@ def generateNames(userRdd, commentDf):
     df.show(10)
 
     # ---- Joing on userID ----
-    df = df.withColumnRenamed('_1', 'ID of comment owner')
+    df = df.withColumnRenamed('_1', 'ID of post owner')
     df = df.withColumnRenamed('_2', 'Dislayed name')
-    newdf = commentDf.join(df, on=['ID of comment owner'])
+    newdf = commentDf.join(df, on=['ID of post owner'])
     # ------ Sorting on number of comments ---------
     newdf = newdf.orderBy("sum(Number of comments)", ascending=False)
     newdf.show(10)
@@ -94,8 +103,7 @@ def saveDF(dataInput):
     return
 
 
-if __name__ == '__main__':
-
+def main_task3():
     rdd = Rdd()
     rdd.returnRddClass()
 
@@ -106,6 +114,11 @@ if __name__ == '__main__':
 
     rdd_data_frame = graphToDataframe(joined_RDD)
 
-    mostComments = findMostComments(rdd_data_frame)
+    mostComments, top10posts = findMostComments(rdd_data_frame)
 
-    generateNames(rdd.getusers(), mostComments)
+    generateNames(rdd.getusers(), top10posts, rdd_data_frame)
+    return
+
+
+if __name__ == '__main__':
+    main_task3()

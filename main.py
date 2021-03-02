@@ -1,6 +1,9 @@
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 import findspark
+import task1
+import task2
+import task3
 findspark.init()
 
 spark = SparkSession.builder.master(
@@ -53,5 +56,13 @@ def returnUsers():
     return df.rdd
 
 
-if __name__ == '__main__':
+def main_method():
     returnUsers().collect()
+    task1.main_task1()
+    task2.main_task2()
+    task3.main_task3()
+    return
+
+
+if __name__ == '__main__':
+    main_method()
