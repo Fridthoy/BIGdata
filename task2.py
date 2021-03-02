@@ -35,10 +35,14 @@ def task21(commentrdd, postrdd):
     avgComment = commentsLength.sum()/commentRecords
     avgQuestion = questionLength.sum()/questionRecords
     avgAnswer = answerLength.sum()/answersRecords
-
-    print(avgComment)
-    print(avgQuestion)
-    print(avgAnswer)
+    print("---------------- task 2.1 -----------------------")
+    print(" ")
+    print("Average length of comments: ", avgComment)
+    print("Average length of questions: ", avgQuestion)
+    print("Average length of answers: ", avgAnswer)
+    print("")
+    print("-------------------------------------------------")
+    return
 
 
 def task22(postrdd, userrdd):
@@ -60,19 +64,31 @@ def task22(postrdd, userrdd):
     print("The users who posted these questions: ", namesOfUsers)
     print("")
     print("-------------------------------------------------")
+    return
 
 
 def task23(postrdd):
     header = postrdd.first()
-    cleanId = postrdd.filter(lambda x: x != header).map(
-        lambda x: x[6]).filter(lambda x: x != "-1")
-    idCount = cleanId.countByValue()
+    cleanPost = postrdd.filter(lambda x: x != header)
+
+    question = cleanPost.filter(lambda x: x[1] == "1").map(
+        lambda x: x[6]).filter(lambda x: x != "NULL")
+    answer = cleanPost.filter(lambda x: x[1] == "2").map(
+        lambda x: x[6]).filter(lambda x: x != "NULL")
+
+    question = question.map(lambda x: (x, 1)).reduceByKey(
+        lambda x, y: x+y).sortBy(lambda x: -x[1])
+    answer = answer.map(lambda x: (x, 1)).reduceByKey(
+        lambda x, y: x+y).sortBy(lambda x: -x[1])
+
     print("---------------- task 2.3 -----------------------")
     print(" ")
     print("The id's of the users who wrote the greatest number of questions and answers:")
-    print(max(idCount, key=idCount.get))
+    print("Answers: ", answer.first()[1], " --- ID: ", answer.first()[0])
+    print("Questions: ", question.first()[1], " --- ID: ", question.first()[0])
     print(" ")
     print("-------------------------------------------------")
+    return
 
 
 def task24(badgerdd, userrdd):
@@ -80,7 +96,8 @@ def task24(badgerdd, userrdd):
     print(" ")
 
     header = badgerdd.first()
-    fixedBadge = badgerdd.filter(lambda x: x != header).map(lambda x: x[0])
+    fixedBadge = badgerdd.filter(
+        lambda x: x != header).map(lambda x: x[0])
     idCount = fixedBadge.countByValue()
     lessThanTwo = dict(filter(lambda x: x[1] < 3, idCount.items()))
     # print(lessThanTwo)
@@ -91,14 +108,14 @@ def task24(badgerdd, userrdd):
     fixedUser = userrdd.filter(lambda x: x != userHeader)
 
     zeroBadge = fixedUser.filter(lambda x: x[0] not in badgeIds)
-    print("working.....")
+    badges = fixedUser.join(zeroBadge).cache()
     print("counting....")
     # print(zeroBadge.take(20))
-    zeroBadge = zeroBadge.map(lambda x: x[0]).distinct().count()
+    badges = badges.count()
     print("counting complete")
     print(" ")
     print("Number of users who hve received less than three badges: ",
-          oneAndTwo + zeroBadge)
+          oneAndTwo + badges)
     print(" ")
     print("-------------------------------------------------")
 
@@ -127,6 +144,7 @@ def task25(userRdd):
     print("The Pearson correlation coefficent: ", r)
     print(" ")
     print("-------------------------------------------------")
+    return
 
 
 def task26(commentRdd):
@@ -144,20 +162,21 @@ def task26(commentRdd):
     print("The Entropy of id of users: ", entropy)
     print(" ")
     print("-------------------------------------------------")
+    return
 
 
 def main_task2():
     rdd = Rdd()
     rdd.returnRddClass()
 
-    # findCommmentlength(rdd.getComments())
+    task21(rdd.getComments(), rdd.getPosts())
     task22(rdd.getPosts(), rdd.getusers())
 
     task23(rdd.getPosts())
     task24(rdd.getBadges(), rdd.getusers())
     task25(rdd.getusers())
     task26(rdd.getComments())
-    #df = rdd.getusers().toDF()
+    # df = rdd.getusers().toDF()
     # df.printSchema()
     # df.show(truncate=False)
     print(" ")

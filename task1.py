@@ -37,11 +37,14 @@ class Rdd:
 
 
 def findNumberOfRows(rdd):
+    print("----------- Task 1 ------------")
 
     print("badges has ", rdd.getBadges().count(), " rows")
     print("Comments has ", rdd.getComments().count(), " rows")
     print("Posts has ", rdd.getPosts().count(), " rows")
     print("Users has ", rdd.getusers().count(), " rows")
+    print("")
+    print("-------------------------------------------------")
 
 
 def main_task1():

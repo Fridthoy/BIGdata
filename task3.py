@@ -1,6 +1,5 @@
 import task1
 from task1 import Rdd
-import findspark
 import pyspark
 import math
 from pyspark import SparkContext, SparkConf
@@ -16,21 +15,6 @@ from pyspark.sql.window import Window
 # #sqlContext = SQLContext(sc)
 # nodes = sqlContext.createDataFrame('data/users.csv')
 # edges = sqlContext.createDataFrame('data/')
-
-
-def graph_of_posts_comments(postsrdd, commentsrdd):
-    posts = postsrdd
-    comments = commentsrdd
-
-    # ------------ Joining the two RDDs ----------------
-    joined_comments_and_posts = comments.join(posts).map(
-        lambda columns: (columns[1], 1)).reduceByKey(lambda commentid, postid: commentid+postid)
-    joined_comments_and_posts = joined_comments_and_posts.map(
-        lambda columns: (columns[0][0], columns[0][1], columns[1]))
-
-    print(joined_comments_and_posts.take(5))
-    return joined_comments_and_posts
-
 
 def graphComment2(postrdd, commentrdd):
     posts = postrdd
@@ -69,7 +53,7 @@ def graphToDataframe(joined_RDD):
 
 def findMostComments(df):
     print("--------- Task 3.3 ---------------")
-    df.show()
+    # df.show()
     print(" ")
     print("# -------- finding the top 10 users who have written the most comments ----------")
 
@@ -82,7 +66,7 @@ def findMostComments(df):
     print("---------------------------------------------------------------------------------")
     # -------- finding the top 10 users with most comments on their post ----------
     print(" ")
-    print("# -------- finding the top 10 users with most comments on their post ----------")
+    # print("# -------- finding the top 10 users with most comments on their post ----------")
 
     top10users = df
     top10users = top10users.withColumnRenamed('_1', 'ID of comment owner')
@@ -91,7 +75,7 @@ def findMostComments(df):
     top10users = top10users.groupBy(
         'ID of post owner').sum('Number of comments')
 
-    top10users.show()
+    # top10users.show()
     print(" ")
     print("---------------------------------------------------------------------------------")
     return newdf, top10users
