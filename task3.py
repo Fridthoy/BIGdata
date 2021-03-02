@@ -4,10 +4,10 @@ import findspark
 import pyspark
 import math
 from pyspark import SparkContext, SparkConf
-from graphframes import *
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql import functions as func
 from pyspark.sql.window import Window
+
 
 # Making a graph
 # Nodes = Users
@@ -27,33 +27,66 @@ def graph_of_posts_comments(postsrdd, commentsrdd):
         lambda columns: (columns[1], 1)).reduceByKey(lambda commentid, postid: commentid+postid)
     joined_comments_and_posts = joined_comments_and_posts.map(
         lambda columns: (columns[0][0], columns[0][1], columns[1]))
-    print(joined_comments_and_posts.take(10))
+
+    print(joined_comments_and_posts.take(5))
     return joined_comments_and_posts
+
+
+def graphComment2(postrdd, commentrdd):
+    posts = postrdd
+    comments = commentrdd
+
+    postHeader = posts.first()
+    commentHeader = comments.first()
+
+    myposts = posts.filter(lambda x: x != postHeader).map(
+        lambda x: (x[0], x[6])).filter(lambda x: x[1] != ("-1" and "NULL"))
+
+    myComments = comments.filter(lambda x: x != commentHeader).map(
+        lambda x: (x[0], x[4])).filter(lambda x: x[1] != ("-1" and "NULL"))
+
+    joined = myComments.join(myposts)
+
+    joined = joined.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x+y)
+
+    joined = joined.map(lambda x: (x[0][0], x[0][1], x[1]))
+
+    return joined
 
 
 def graphToDataframe(joined_RDD):
     df = joined_RDD.toDF()
-    print(df.show())
     return df
 
 
-def usersWithMostComments(DataFrame):
-    window = Window.partitionBy(
-        DataFrame['_1']).orderBy(DataFrame['_3'].desc())
-    '''
-    top10 = DataFrame.groupBy('_1').sum('_3').sort(
-        func.Column("sum(_3)").desc().take(10))
-    '''
-    top10 = DataFrame.select(
-        '*', rank().over(window).alias('most comments')).filter(func.col('rank)'))
-    top10.show()
-
-    return top10
+def findMostComments(df):
+    df.show()
+    newdf = df.drop('_2')
+    newdf = newdf.withColumnRenamed('_1', 'ID of comment owner')
+    newdf = newdf.withColumnRenamed('_3', 'Number of comments')
+    newdf = newdf.groupBy('ID of comment owner').sum('Number of comments')
+    newdf = newdf.orderBy("sum(Number of comments)", ascending=False)
+    newdf.show(10)
+    return newdf
 
 
-def namesOfTop10Users():
+def generateNames(userRdd, commentDf):
 
-    return
+    # -------- Initializing the userRDD and converting to DF -----------
+    header = userRdd.first()
+    user = userRdd.filter(lambda x: x != header).map(lambda x: (x[0], x[3]))
+    df = user.toDF()
+    df.show(10)
+
+    # ---- Joing on userID ----
+    df = df.withColumnRenamed('_1', 'ID of comment owner')
+    df = df.withColumnRenamed('_2', 'Dislayed name')
+    newdf = commentDf.join(df, on=['ID of comment owner'])
+    # ------ Sorting on number of comments ---------
+    newdf = newdf.orderBy("sum(Number of comments)", ascending=False)
+    newdf.show(10)
+
+    return newdf
 
 
 def saveDF(dataInput):
@@ -62,12 +95,17 @@ def saveDF(dataInput):
 
 
 if __name__ == '__main__':
-    #sc = SparkContext.getOrCreate()
-    #spark = SparkSession(sc)
+
     rdd = Rdd()
     rdd.returnRddClass()
-    joined_RDD = graph_of_posts_comments(
+
+    graphComment2(rdd.getPosts(), rdd.getComments())
+
+    joined_RDD = graphComment2(
         rdd.getPosts(), rdd.getComments())
+
     rdd_data_frame = graphToDataframe(joined_RDD)
-    # usersWithMostComments(rdd_data_frame)
-    # saveDF(joined_RDD)
+
+    mostComments = findMostComments(rdd_data_frame)
+
+    generateNames(rdd.getusers(), mostComments)
