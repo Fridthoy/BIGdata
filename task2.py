@@ -94,30 +94,22 @@ def task23(postrdd):
 def task24(badgerdd, userrdd):
     print("---------------- task 2.4 -----------------------")
     print(" ")
-
     header = badgerdd.first()
-    fixedBadge = badgerdd.filter(
-        lambda x: x != header).map(lambda x: x[0])
+    fixedBadge = badgerdd.filter(lambda x: x != header).map(lambda x: x[0])
     idCount = fixedBadge.countByValue()
     lessThanTwo = dict(filter(lambda x: x[1] < 3, idCount.items()))
-    # print(lessThanTwo)
-    oneAndTwo = len(lessThanTwo)
+    badgeId = fixedBadge.distinct().count()
+    total = (userrdd.count()-1 - badgeId) + len(lessThanTwo)
 
-    badgeIds = fixedBadge.collect()
-    userHeader = userrdd.first()
-    fixedUser = userrdd.filter(lambda x: x != userHeader)
-
-    zeroBadge = fixedUser.filter(lambda x: x[0] not in badgeIds)
-    badges = fixedUser.join(zeroBadge).cache()
-    print("counting....")
-    # print(zeroBadge.take(20))
-    badges = badges.count()
+    print(total)
     print("counting complete")
     print(" ")
     print("Number of users who hve received less than three badges: ",
-          oneAndTwo + badges)
+          total)
     print(" ")
     print("-------------------------------------------------")
+
+    print(total)
 
     return len(lessThanTwo)
 
