@@ -14,14 +14,20 @@ import pyspark
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import re
+import base64
 
 
-def preProcessing(posts):
-    myposts = posts.filter(lambda x: x[1] != ("-1" and "NULL"))
-    postss = myposts.map(lambda x: x[1])
-    post = postss.map(decodeString)
+# We need to filter on postIDs
+# problem, cant use the standard decoder made in task2, need to take in an RDD
+
+def preProcessing(post):
+    myposts = post.filter(lambda x: x[1] != ("-1" and "NULL"))
+    post = myposts.map(decodeString)
+    print(myposts.take(1))
+    # postss = myposts.map(lambda x: x[1])
+    # post = postss.map(decodeString)
     post = post.map(removeChar)
-    print(post.take(10))
+    print(post.take(1))
     # post = post.lower()
     # print(post)
     # post.sub(['!?#$%&()=+'])
@@ -30,6 +36,7 @@ def preProcessing(posts):
 
 
 def removeChar(line: str):
+    line = line.lower()
     line = re.sub('[!?#$%&()=+<>;:/*@]', '', line)
     return line
 
@@ -39,14 +46,17 @@ def tokenize():
     return
 
 
-def algorithm(postsRDD):
+def algorithm(postsRDD, postID):
     header = postsRDD.first()
     posts = postsRDD.filter(lambda x: x != header).map(lambda x: (x[0], x[5]))
-    #posts = posts.toDF()
+    post = posts.filter(lambda x: x[0] == postID)
+    post = post.map(lambda x: x[1])
+    print(post.take(1))
+    # posts = posts.toDF()
     # posts.show()
     # df.select(df['_2']).printSchema()
     # df.select(lower(col(df['_2']))).show()
-    preProcessing(posts)
+    processedPost = preProcessing(post)
 
     return
 
@@ -54,4 +64,4 @@ def algorithm(postsRDD):
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
-    algorithm(rdd.getPosts())
+    algorithm(rdd.getPosts(), "14")
