@@ -152,7 +152,9 @@ def findRelationships(tokens):
         for j in range(5):
             window.append(tokens[i + j])
         myWindows.append(window)
-    return myWindows
+
+    myEdges = createEdges(myWindows)
+    return myEdges
 
 
 def createEdges(windows):
@@ -178,10 +180,10 @@ def algorithm(postsRDD, postID):
     myTok = myTok.map(biggerThan3)
     myTok = myTok.map(removeStopWords)
 
-    print(myTok.take(2))
+    myWindows = myTok.map(findRelationships)
+    print(myWindows.take(3))
     uniqueList = myTok.map(createUniqueWordList)
 
-    print(uniqueList.take(4))
 
 
     #biggerThan3 = myTok.filter(lambda x: len(x)>=3)
@@ -192,9 +194,12 @@ def algorithm(postsRDD, postID):
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
-    #algorithm(rdd.getPosts(), "14")
+    algorithm(rdd.getPosts(), "14")
 
+    '''
     list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     my = findRelationships(list)
     print(createEdges(my))
     print(my)
+
+    '''
