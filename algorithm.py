@@ -183,7 +183,6 @@ def algorithm(postsRDD, postID):
 
     print(uniqueList.take(4))
 
-
     #biggerThan3 = myTok.filter(lambda x: len(x)>=3)
 
     return
@@ -194,7 +193,7 @@ if __name__ == '__main__':
     rdd.returnRddClass()
     #algorithm(rdd.getPosts(), "14")
 
-    list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    #list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     my = findRelationships(list)
     print(createEdges(my))
     print(my)
