@@ -172,6 +172,8 @@ def findRelationships(tokens):
     print("="*80)
     return edges
 
+# --- functions for creating the edges ---
+
 
 def createEdges(windows):
     edges = []
@@ -211,7 +213,12 @@ def algorithm(rdd, postID):
     # ----- starting stage two -------
     edges = edges.first()
     vertices = uniqueList.first()
+    print("="*80)
+    print("Vertices")
+    print("")
     print(vertices)
+    print("="*80)
+
     # --- graphFrame ---
     #graphFrame(vertices, edges)
 
