@@ -11,8 +11,10 @@ import task1
 from task1 import Rdd
 from task2 import decodeString
 import pyspark
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from graphframes import *
 import re
 from graphframes import *
 
@@ -105,14 +107,10 @@ def preProcessing(post):
 
 
 def removeChar(line: str):
-    print(line)
     line = line.lower()
     line = line.replace('<p>', ' ').replace(
         '</p>', '').replace('&#xa;', '').replace('\t', '')
     line = re.sub('[!?#$%&()=+<>;€Ÿ:/*@}{]', '', line)
-    print("="*80)
-    print(line)
-
     return line
 
 
@@ -128,7 +126,6 @@ def biggerThan3(list):
             x = re.sub('[.,]', ' ', x)
             x = re.sub(' ', '', x)
             mylist.append(x)
-    print(mylist)
     return mylist
 
 
@@ -175,7 +172,8 @@ def createEdges(windows):
     return edges
 
 
-def algorithm(postsRDD, postID):
+def algorithm(rdd, postID):
+    postsRDD = rdd.getPosts()
     header = postsRDD.first()
     posts = postsRDD.filter(lambda x: x != header).map(lambda x: (x[0], x[5]))
     post = posts.filter(lambda x: x[0] == postID)
@@ -185,11 +183,24 @@ def algorithm(postsRDD, postID):
     myTok = myTok.map(biggerThan3)
     myTok = myTok.map(removeStopWords)
 
-    myWindows = myTok.map(findRelationships)
-    print(myWindows.take(3))
+    edges = myTok.map(findRelationships)
     uniqueList = myTok.map(createUniqueWordList)
 
-    # biggerThan3 = myTok.filter(lambda x: len(x)>=3)
+    spark, _ = rdd.init_spark()
+    edges = edges.first()
+    vertices = uniqueList.first()
+
+    print(uniqueList.first())
+    edgeDf = spark.createDataFrame(edges, ['src', 'dst'])
+    verteciesDf = spark.createDataFrame(vertices, "string").toDF("word")
+
+    edgeDf.show()
+    verteciesDf.show()
+
+    g = GraphFrame(verteciesDf, edgeDf)
+    #g.degrees.show()
+
+
 
     return
 
@@ -197,12 +208,11 @@ def algorithm(postsRDD, postID):
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
-    algorithm(rdd.getPosts(), "14")
+    algorithm(rdd, "14")
 
     '''
     list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     my = findRelationships(list)
     print(createEdges(my))
     print(my)
-
     '''
