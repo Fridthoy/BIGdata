@@ -162,7 +162,13 @@ def createEdges(windows):
     edges = []
     for winds in windows:
         for win in winds:
-            print(1)
+            for check in winds:
+                if win != check:
+                    edge = (win, check)
+                    if edge not in edges and (check, win) not in edges:
+                        edges.append(edge)
+
+    return edges
 
 
 
@@ -195,4 +201,5 @@ if __name__ == '__main__':
 
     list = [1,2,3,4,5,6,7,8,9,10,11]
     my = findRelationships(list)
+    print(createEdges(my))
     print(my)
