@@ -119,15 +119,19 @@ def tokenized(line: str):
     line = re.split('\s+', line)
     return line
 
+# --- filtering out words with 3 or less letters ---
+
 
 def sizeFilter(input_list):
     filteredList = []
     for x in input_list:
         if len(x) >= 3:
-            x = re.sub('[.,]', ' ', x)
+            x = re.sub('[.,]', ' ', x)  # removing DOT characters.
             x = re.sub(' ', '', x)
             filteredList.append(x)
     return filteredList
+
+# --- removing words that are in the stopwords list --
 
 
 def removeStopWords(input_list):
@@ -137,6 +141,8 @@ def removeStopWords(input_list):
             updatedList.append(word)
     return updatedList
 
+# --- removing word duplictates to make nodes ---
+
 
 def createUniqueWordList(input_list):
     wordList = []
@@ -144,6 +150,8 @@ def createUniqueWordList(input_list):
         if word not in wordList:
             wordList.append(word)
     return wordList
+
+# --- function for finding the edges ---
 
 
 def findRelationships(tokens):
@@ -201,18 +209,26 @@ def algorithm(rdd, postID):
     uniqueList = processedTokens.map(createUniqueWordList)
 
     # ----- starting stage two -------
-    spark, _ = rdd.init_spark()
     edges = edges.first()
     vertices = uniqueList.first()
-    print(uniqueList.first())
-    edgeDf = spark.createDataFrame(edges, ['src', 'dst'])
-    verteciesDf = spark.createDataFrame(vertices, "string").toDF("word")
+    print(vertices)
+    # --- graphFrame ---
+    #graphFrame(vertices, edges)
 
+    return
+
+
+def graphFrame(vertices, edges):
+    spark, _ = rdd.init_spark()
+    edgeDf = spark.createDataFrame(edges, ['src', 'dst'])
+    verteciesDf = spark.createDataFrame(vertices, 'string').toDF('word')
     edgeDf.show()
     verteciesDf.show()
-
-    # g = GraphFrame(verteciesDf, edgeDf)
-    # g.degrees.show()
+    g = GraphFrame(verteciesDf, edgeDf)
+    g.degrees.show()
+    pageRank = g.pageRank(resetProbability=0.15, tol=0.0001)
+    pageRank.vertices.sort("page rank", desc=True).select(
+        'word', "page rank").show(10)
 
     return
 
