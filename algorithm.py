@@ -162,6 +162,7 @@ def createEdges(windows):
     edges = []
     for winds in windows:
         for win in winds:
+            print(1)
 
 
 
