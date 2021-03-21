@@ -1,3 +1,4 @@
+
 '''
 The algorithm consists of two major stages.
 Given a piece of textual information like a web-post, the algorithm constructs a graph of the terms in the document
@@ -105,12 +106,9 @@ def preProcessing(post):
 
 def removeChar(line: str):
     line = line.lower()
-    print(line)
-    print('='*80)
     line = line.replace('<p>', '')
     line = line.replace('</p>', '')
     line = line.replace('&#xa;', '')
-    print(line)
     line = re.sub('[!?#$%&()=+<>;:/*@]', '', line)
 
     return line
@@ -161,7 +159,13 @@ def createEdges(windows):
     edges = []
     for winds in windows:
         for win in winds:
-            print(1)
+            for check in winds:
+                if win != check:
+                    edge = (win, check)
+                    if edge not in edges and (check, win) not in edges:
+                        edges.append(edge)
+
+    return edges
 
 
 def algorithm(postsRDD, postID):
@@ -179,6 +183,7 @@ def algorithm(postsRDD, postID):
 
     print(uniqueList.take(4))
 
+
     #biggerThan3 = myTok.filter(lambda x: len(x)>=3)
 
     return
@@ -187,8 +192,9 @@ def algorithm(postsRDD, postID):
 if __name__ == '__main__':
     rdd = Rdd()
     rdd.returnRddClass()
-    algorithm(rdd.getPosts(), "14")
+    #algorithm(rdd.getPosts(), "14")
 
-    #list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-    #my = findRelationships(list)
-    # print(my)
+    list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    my = findRelationships(list)
+    print(createEdges(my))
+    print(my)
