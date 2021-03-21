@@ -1,12 +1,4 @@
 
-'''
-The algorithm consists of two major stages.
-Given a piece of textual information like a web-post, the algorithm constructs a graph of the terms in the document
-first. In this graph, terms in the input document are nodes, and the edges show the relationship between the terms.
-Then, it will rank nodes (or terms) based on their PageRank scores. Finally, it will return top-k terms with the most
-PageRank score as the input document's representative terms.
-'''
-
 import task1
 from task1 import Rdd
 from task2 import decodeString
@@ -95,9 +87,8 @@ stopwords = ["a", "about", "above", "after", "again", "against", "ain", "all", "
              "presumably", "reasonably", "second", "secondly", "sensible", "serious", "seriously",
              "sure", "t's", "third", "thorough", "thoroughly", "three", "well", "wonder"]
 
-# We need to filter on postIDs
-# problem, cant use the standard decoder made in task2, need to take in an RDD
 
+# ----- see algorithm() for main function ------
 
 def preProcessing(post):
     myposts = post.filter(lambda x: x[1] != ("-1" and "NULL"))
@@ -107,89 +98,112 @@ def preProcessing(post):
 
 
 def removeChar(line: str):
+    print("="*80)
+    print("Unprocessed post")
+    print("")
+    print(line)
+    print("="*80)
     line = line.lower()
     line = line.replace('<p>', ' ').replace(
         '</p>', '').replace('&#xa;', '').replace('\t', '')
     line = re.sub('[!?#$%&()=+<>;€Ÿ:/*@}{]', '', line)
+    print("="*80)
+    print("processed post")
+    print("")
+    print(line)
+    print("="*80)
     return line
 
 
 def tokenized(line: str):
-    line = re.split("\s+", line)
+    line = re.split('\s+', line)
     return line
 
 
-def biggerThan3(list):
-    mylist = []
-    for x in list:
+def sizeFilter(input_list):
+    filteredList = []
+    for x in input_list:
         if len(x) >= 3:
             x = re.sub('[.,]', ' ', x)
             x = re.sub(' ', '', x)
-            mylist.append(x)
-    return mylist
+            filteredList.append(x)
+    return filteredList
 
 
-def removeStopWords(list):
-    myList = []
-    for word in list:
+def removeStopWords(input_list):
+    updatedList = []
+    for word in input_list:
         if word not in stopwords:
-            myList.append(word)
-    return myList
+            updatedList.append(word)
+    return updatedList
 
 
-def createUniqueWordList(list):
-    myList = []
-    for word in list:
-        if word not in myList:
-            myList.append(word)
-    return myList
+def createUniqueWordList(input_list):
+    wordList = []
+    for word in input_list:
+        if word not in wordList:
+            wordList.append(word)
+    return wordList
 
 
 def findRelationships(tokens):
-    myWindows = []
+    windows = []
     for i in range(len(tokens)):
         if (i + 5 > len(tokens)):
             break
         window = []
         for j in range(5):
             window.append(tokens[i + j])
-        myWindows.append(window)
+        windows.append(window)
 
-    myEdges = createEdges(myWindows)
-    return myEdges
+    edges = createEdges(windows)
+    print("="*80)
+    print("Edges")
+    print("")
+    print(edges)
+    print("="*80)
+    return edges
 
 
 def createEdges(windows):
     edges = []
-    for winds in windows:
-        for win in winds:
-            for check in winds:
-                if win != check:
-                    edge = (win, check)
-                    if edge not in edges and (check, win) not in edges:
+    for window in windows:
+        for element in window:
+            for check in window:
+                if element != check:
+                    edge = (element, check)
+                    if edge not in edges and (check, element) not in edges:
                         edges.append(edge)
 
     return edges
 
 
 def algorithm(rdd, postID):
+    # ----- initilizing the data -------
     postsRDD = rdd.getPosts()
     header = postsRDD.first()
     posts = postsRDD.filter(lambda x: x != header).map(lambda x: (x[0], x[5]))
     post = posts.filter(lambda x: x[0] == postID)
     post = post.map(lambda x: x[1])
+    # ------- starting the preprocessing --------
     processedPost = preProcessing(post)
-    myTok = processedPost.map(tokenized)
-    myTok = myTok.map(biggerThan3)
-    myTok = myTok.map(removeStopWords)
+    tokenize = processedPost.map(tokenized)
+    filteredTokens = tokenize.map(sizeFilter)
+    processedTokens = filteredTokens.map(removeStopWords)
 
-    edges = myTok.map(findRelationships)
-    uniqueList = myTok.map(createUniqueWordList)
+    print("="*80)
+    print("Final sequence of tokens")
+    print("")
+    print(processedTokens.first())
+    print("="*80)
 
+    edges = processedTokens.map(findRelationships)
+    uniqueList = processedTokens.map(createUniqueWordList)
+
+    # ----- starting stage two -------
     spark, _ = rdd.init_spark()
     edges = edges.first()
     vertices = uniqueList.first()
-
     print(uniqueList.first())
     edgeDf = spark.createDataFrame(edges, ['src', 'dst'])
     verteciesDf = spark.createDataFrame(vertices, "string").toDF("word")
@@ -197,10 +211,8 @@ def algorithm(rdd, postID):
     edgeDf.show()
     verteciesDf.show()
 
-    g = GraphFrame(verteciesDf, edgeDf)
-    #g.degrees.show()
-
-
+    # g = GraphFrame(verteciesDf, edgeDf)
+    # g.degrees.show()
 
     return
 
