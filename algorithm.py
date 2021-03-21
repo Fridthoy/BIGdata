@@ -14,7 +14,7 @@ import pyspark
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import re
-import base64
+from graphframes import *
 
 stopwords = ["a", "about", "above", "after", "again", "against", "ain", "all", "am",
              "an", "and", "any", "are", "aren", "aren't", "as", "at", "be", "because", "been", "before", "being",
